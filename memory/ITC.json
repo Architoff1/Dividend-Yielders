@@ -118,5 +118,53 @@
         "pe": 19.278255,
         "volatility": 1.0,
         "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 313.8500061035156,
+        "confidence": 50,
+        "action": "HOLD",
+        "weekly_trend": "DOWN",
+        "monthly_trend": "DOWN",
+        "dividend_yield": 4.53,
+        "pe": 19.278255,
+        "volatility": 1.0,
+        "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 313.8500061035156,
+        "confidence": 50,
+        "action": "HOLD",
+        "weekly_trend": "DOWN",
+        "monthly_trend": "DOWN",
+        "dividend_yield": 4.53,
+        "pe": 19.278255,
+        "volatility": 1.0,
+        "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 313.8500061035156,
+        "confidence": 50,
+        "action": "HOLD",
+        "weekly_trend": "DOWN",
+        "monthly_trend": "DOWN",
+        "dividend_yield": 4.53,
+        "pe": 19.278255,
+        "volatility": 1.0,
+        "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 313.8500061035156,
+        "confidence": 50,
+        "action": "HOLD",
+        "weekly_trend": "DOWN",
+        "monthly_trend": "DOWN",
+        "dividend_yield": 4.53,
+        "pe": 19.278255,
+        "volatility": 1.0,
+        "sector": "GENERAL"
     }
 ]

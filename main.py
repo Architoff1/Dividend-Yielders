@@ -3,6 +3,7 @@
 # PHASE 1 — STRUCTURAL FOUNDATION (DECISION-GRADE)
 # PHASE 2.1 — MEMORY ENGINE (INTELLIGENCE LAYER)
 # PHASE 2.2 — CONFIDENCE TREND & DECAY ENGINE
+# PHASE 2.3 — CAPITAL PACING & ENTRY GUARDRAILS
 # PLATFORM-INDEPENDENT DISPLAY ENGINE
 # =========================================================
 
@@ -84,22 +85,11 @@ def confidence_trend(stock, lookback=7):
     mem = get_recent_memory(stock, lookback)
 
     if len(mem) < 2:
-        return {
-            "trend": "INSUFFICIENT_DATA",
-            "delta": 0,
-            "decay": False,
-            "stagnant": False
-        }
+        return {"trend": "INSUFFICIENT_DATA", "delta": 0, "decay": False, "stagnant": False}
 
     confidences = [m["confidence"] for m in mem if m.get("confidence") is not None]
-
     if len(confidences) < 2:
-        return {
-            "trend": "INSUFFICIENT_DATA",
-            "delta": 0,
-            "decay": False,
-            "stagnant": False
-        }
+        return {"trend": "INSUFFICIENT_DATA", "delta": 0, "decay": False, "stagnant": False}
 
     delta = confidences[-1] - confidences[0]
 
@@ -113,12 +103,29 @@ def confidence_trend(stock, lookback=7):
     decay = confidences[-1] >= 60 and delta < 0
     stagnant = len(set(confidences[-3:])) == 1 if len(confidences) >= 3 else False
 
-    return {
-        "trend": trend,
-        "delta": delta,
-        "decay": decay,
-        "stagnant": stagnant
-    }
+    return {"trend": trend, "delta": delta, "decay": decay, "stagnant": stagnant}
+
+# ================= PHASE 2.3 — CAPITAL PACING & ENTRY GUARDRAILS =================
+def entry_guardrails(df):
+    latest = df.iloc[-1]
+    if latest["RSI"] > 70:
+        return "WAIT"
+    if latest["Close"] > latest["200DMA"] * 1.12:
+        return "WAIT"
+    return "BUY NOW"
+
+def capital_pacing(conf_score, trend_meta):
+    if trend_meta["trend"] == "IMPROVING":
+        pace, frac = "FAST", 0.50
+    elif trend_meta["trend"] == "FLAT":
+        pace, frac = "SLOW", 0.25
+    else:
+        pace, frac = "PAUSED", 0.0
+
+    if trend_meta["decay"] or trend_meta["stagnant"]:
+        pace, frac = "PAUSED", 0.0
+
+    return pace, frac
 
 # ================= WATCHLIST =================
 def load_watchlist():
@@ -234,10 +241,7 @@ def confidence_engine(signals):
         "volatility": 15 if signals["low_volatility"] else 0
     }
 
-    return {
-        "score": max(min(sum(components.values()), 100), 0),
-        "components": components
-    }
+    return {"score": max(min(sum(components.values()), 100), 0), "components": components}
 
 # ================= DECISION ENGINE =================
 def decision_engine(conf_score, weekly, monthly):
@@ -266,13 +270,14 @@ def analyze_single_stock(ticker):
     conf = confidence_engine(signals)
 
     trend_meta = confidence_trend(ticker.replace(".NS", ""))
+    entry = entry_guardrails(df)
+    pace, frac = capital_pacing(conf["score"], trend_meta)
 
-    action = decision_engine(
-        conf["score"],
-        signals["weekly_trend"],
-        signals["monthly_trend"]
-    )
+    max_buy = position_size(conf["score"])
+    deploy_now = round(max_buy * frac, 2)
+    remaining = round(max_buy - deploy_now, 2)
 
+    action = decision_engine(conf["score"], signals["weekly_trend"], signals["monthly_trend"])
     latest = df.iloc[-1]
 
     return {
@@ -291,7 +296,11 @@ def analyze_single_stock(ticker):
         "Decay Warning": "YES" if trend_meta["decay"] else "NO",
         "Stagnation": "YES" if trend_meta["stagnant"] else "NO",
         "Action": action,
-        "Max Buy (₹)": position_size(conf["score"]),
+        "Entry Timing": entry,
+        "Capital Pace": pace,
+        "Deploy Now (₹)": deploy_now,
+        "Remaining Allocation (₹)": remaining,
+        "Max Buy (₹)": max_buy,
         "Holding Period": f"{MIN_HOLD_YEARS}–{IDEAL_HOLD_YEARS} yrs",
         "Confidence Breakdown": conf["components"]
     }
@@ -320,19 +329,15 @@ def show_table(df, title=None):
             styled_row = []
             for val, col in zip(row.values, df.columns):
                 if col == "Confidence Score":
-                    styled_row.append(
-                        Text(str(val),
-                             style="bold green" if val >= 75 else
-                                   "bold yellow" if val >= 55 else
-                                   "bold red")
-                    )
+                    styled_row.append(Text(str(val),
+                        style="bold green" if val >= 75 else
+                              "bold yellow" if val >= 55 else
+                              "bold red"))
                 elif col == "Action":
-                    styled_row.append(
-                        Text(val,
-                             style="bold green" if "ACCUMULATE" in val else
-                                   "yellow" if val == "HOLD" else
-                                   "bold red")
-                    )
+                    styled_row.append(Text(val,
+                        style="bold green" if "ACCUMULATE" in val else
+                              "yellow" if val == "HOLD" else
+                              "bold red"))
                 else:
                     styled_row.append(Text(str(val)))
             table.add_row(*styled_row)
@@ -347,21 +352,19 @@ def main():
         "1Y Return %", "Seasonal Bias",
         "Confidence Score", "Confidence Trend", "Confidence Δ",
         "Decay Warning", "Stagnation",
-        "Action", "Max Buy (₹)", "Holding Period"
+        "Action", "Entry Timing", "Capital Pace",
+        "Deploy Now (₹)", "Remaining Allocation (₹)",
+        "Max Buy (₹)", "Holding Period"
     ]
 
     watchlist = load_watchlist()
-
     if watchlist:
         results = [analyze_single_stock(s) for s in watchlist]
         for r in results:
             write_memory(r)
-
         df = pd.DataFrame(results)
-        show_table(
-            df[cols].sort_values("Confidence Score", ascending=False),
-            title="📈 WATCHLIST ANALYSIS"
-        )
+        show_table(df[cols].sort_values("Confidence Score", ascending=False),
+                   title="📈 WATCHLIST ANALYSIS")
     else:
         print("ℹ️ Watchlist empty")
 
@@ -369,12 +372,8 @@ def main():
     if search:
         stock_data = analyze_single_stock(search)
         write_memory(stock_data)
-
         sdf = pd.DataFrame([stock_data])
-        show_table(
-            sdf[cols],
-            title="🔎 STOCK ANALYSIS"
-        )
+        show_table(sdf[cols], title="🔎 STOCK ANALYSIS")
 
         if search in watchlist:
             if input("Remove from watchlist? (y/n): ").lower() == "y":

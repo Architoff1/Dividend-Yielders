@@ -2,6 +2,7 @@
 # DIVIDEND + VALUE + MULTI-TIMEFRAME ENGINE
 # PHASE 1 — STRUCTURAL FOUNDATION (DECISION-GRADE)
 # PHASE 2.1 — MEMORY ENGINE (INTELLIGENCE LAYER)
+# PHASE 2.2 — CONFIDENCE TREND & DECAY ENGINE
 # PLATFORM-INDEPENDENT DISPLAY ENGINE
 # =========================================================
 
@@ -71,6 +72,53 @@ def write_memory(snapshot):
 
     history.append(entry)
     save_memory(stock, history)
+
+# ================= PHASE 2.2 — CONFIDENCE TREND ENGINE =================
+def get_recent_memory(stock, lookback=7):
+    history = load_memory(stock)
+    if not history:
+        return []
+    return history[-lookback:]
+
+def confidence_trend(stock, lookback=7):
+    mem = get_recent_memory(stock, lookback)
+
+    if len(mem) < 2:
+        return {
+            "trend": "INSUFFICIENT_DATA",
+            "delta": 0,
+            "decay": False,
+            "stagnant": False
+        }
+
+    confidences = [m["confidence"] for m in mem if m.get("confidence") is not None]
+
+    if len(confidences) < 2:
+        return {
+            "trend": "INSUFFICIENT_DATA",
+            "delta": 0,
+            "decay": False,
+            "stagnant": False
+        }
+
+    delta = confidences[-1] - confidences[0]
+
+    if delta >= 5:
+        trend = "IMPROVING"
+    elif delta <= -5:
+        trend = "WEAKENING"
+    else:
+        trend = "FLAT"
+
+    decay = confidences[-1] >= 60 and delta < 0
+    stagnant = len(set(confidences[-3:])) == 1 if len(confidences) >= 3 else False
+
+    return {
+        "trend": trend,
+        "delta": delta,
+        "decay": decay,
+        "stagnant": stagnant
+    }
 
 # ================= WATCHLIST =================
 def load_watchlist():
@@ -161,7 +209,6 @@ def seasonal_bias(df):
 # ================= SIGNAL EXTRACTION =================
 def extract_signals(df, info):
     latest = df.iloc[-1]
-
     pe = info.get("trailingPE", None)
     div = normalize_dividend_yield(info.get("dividendYield", 0), latest["Close"])
 
@@ -218,6 +265,8 @@ def analyze_single_stock(ticker):
     signals, pe, div = extract_signals(df, info)
     conf = confidence_engine(signals)
 
+    trend_meta = confidence_trend(ticker.replace(".NS", ""))
+
     action = decision_engine(
         conf["score"],
         signals["weekly_trend"],
@@ -237,42 +286,23 @@ def analyze_single_stock(ticker):
         "1Y Return %": yearly_performance(df),
         "Seasonal Bias": seasonal_bias(df),
         "Confidence Score": conf["score"],
+        "Confidence Trend": trend_meta["trend"],
+        "Confidence Δ": trend_meta["delta"],
+        "Decay Warning": "YES" if trend_meta["decay"] else "NO",
+        "Stagnation": "YES" if trend_meta["stagnant"] else "NO",
         "Action": action,
         "Max Buy (₹)": position_size(conf["score"]),
         "Holding Period": f"{MIN_HOLD_YEARS}–{IDEAL_HOLD_YEARS} yrs",
         "Confidence Breakdown": conf["components"]
     }
 
-# ================= TABLE STYLING (NOTEBOOK) =================
-def style_table(df):
-    def conf(v):
-        return (
-            "background-color:#c6f6d5"
-            if v >= 75 else
-            "background-color:#faf089"
-            if v >= 55 else
-            "background-color:#fed7d7"
-        )
-
-    def act(v):
-        return (
-            "color:green;font-weight:bold"
-            if "ACCUMULATE" in v else
-            "color:orange"
-            if v == "HOLD" else
-            "color:red;font-weight:bold"
-        )
-
-    return df.style.map(conf, subset=["Confidence Score"]) \
-                   .map(act, subset=["Action"])
-
 # ================= DISPLAY ENGINE =================
-def show_table(df, styled_df=None, title=None):
+def show_table(df, title=None):
     if ENV == "notebook":
         from IPython.display import display, HTML
         if title:
             display(HTML(f"<h3>{title}</h3>"))
-        display(styled_df if styled_df is not None else df)
+        display(df)
     else:
         from rich.console import Console
         from rich.table import Table
@@ -290,19 +320,19 @@ def show_table(df, styled_df=None, title=None):
             styled_row = []
             for val, col in zip(row.values, df.columns):
                 if col == "Confidence Score":
-                    if val >= 75:
-                        styled_row.append(Text(str(val), style="bold green"))
-                    elif val >= 55:
-                        styled_row.append(Text(str(val), style="bold yellow"))
-                    else:
-                        styled_row.append(Text(str(val), style="bold red"))
+                    styled_row.append(
+                        Text(str(val),
+                             style="bold green" if val >= 75 else
+                                   "bold yellow" if val >= 55 else
+                                   "bold red")
+                    )
                 elif col == "Action":
-                    if "ACCUMULATE" in val:
-                        styled_row.append(Text(val, style="bold green"))
-                    elif val == "HOLD":
-                        styled_row.append(Text(val, style="yellow"))
-                    else:
-                        styled_row.append(Text(val, style="bold red"))
+                    styled_row.append(
+                        Text(val,
+                             style="bold green" if "ACCUMULATE" in val else
+                                   "yellow" if val == "HOLD" else
+                                   "bold red")
+                    )
                 else:
                     styled_row.append(Text(str(val)))
             table.add_row(*styled_row)
@@ -315,8 +345,9 @@ def main():
         "Stock", "Sector", "Price", "Dividend Yield %",
         "P/E", "Weekly Trend", "Monthly Trend",
         "1Y Return %", "Seasonal Bias",
-        "Confidence Score", "Action", "Max Buy (₹)",
-        "Holding Period"
+        "Confidence Score", "Confidence Trend", "Confidence Δ",
+        "Decay Warning", "Stagnation",
+        "Action", "Max Buy (₹)", "Holding Period"
     ]
 
     watchlist = load_watchlist()
@@ -329,7 +360,6 @@ def main():
         df = pd.DataFrame(results)
         show_table(
             df[cols].sort_values("Confidence Score", ascending=False),
-            styled_df=style_table(df[cols]),
             title="📈 WATCHLIST ANALYSIS"
         )
     else:
@@ -343,7 +373,6 @@ def main():
         sdf = pd.DataFrame([stock_data])
         show_table(
             sdf[cols],
-            styled_df=style_table(sdf[cols]),
             title="🔎 STOCK ANALYSIS"
         )
 
@@ -356,3 +385,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

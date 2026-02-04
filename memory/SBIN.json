@@ -94,5 +94,29 @@
         "pe": 11.879448,
         "volatility": 1.0,
         "sector": "BANKING"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 1068.199951171875,
+        "confidence": 65,
+        "action": "ACCUMULATE_SLOWLY",
+        "weekly_trend": "UP",
+        "monthly_trend": "UP",
+        "dividend_yield": 1.49,
+        "pe": 11.879448,
+        "volatility": 1.0,
+        "sector": "BANKING"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 1068.199951171875,
+        "confidence": 65,
+        "action": "ACCUMULATE_SLOWLY",
+        "weekly_trend": "UP",
+        "monthly_trend": "UP",
+        "dividend_yield": 1.49,
+        "pe": 11.879448,
+        "volatility": 1.0,
+        "sector": "BANKING"
     }
 ]

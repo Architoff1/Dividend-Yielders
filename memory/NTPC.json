@@ -166,5 +166,129 @@
         "pe": 20.323742,
         "volatility": 1.0,
         "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 367.25,
+        "confidence": 70,
+        "action": "ACCUMULATE_SLOWLY",
+        "weekly_trend": "UP",
+        "monthly_trend": "UP",
+        "dividend_yield": 3.17,
+        "pe": 20.323742,
+        "volatility": 1.0,
+        "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 367.25,
+        "confidence": 70,
+        "action": "ACCUMULATE_SLOWLY",
+        "weekly_trend": "UP",
+        "monthly_trend": "UP",
+        "dividend_yield": 3.17,
+        "pe": 20.323742,
+        "volatility": 1.0,
+        "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 367.25,
+        "confidence": 70,
+        "action": "ACCUMULATE_SLOWLY",
+        "weekly_trend": "UP",
+        "monthly_trend": "UP",
+        "dividend_yield": 3.17,
+        "pe": 20.323742,
+        "volatility": 1.0,
+        "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 367.25,
+        "confidence": 70,
+        "action": "ACCUMULATE_SLOWLY",
+        "weekly_trend": "UP",
+        "monthly_trend": "UP",
+        "dividend_yield": 3.17,
+        "pe": 20.323742,
+        "volatility": 1.0,
+        "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 367.25,
+        "confidence": 70,
+        "action": "ACCUMULATE_SLOWLY",
+        "weekly_trend": "UP",
+        "monthly_trend": "UP",
+        "dividend_yield": 3.17,
+        "pe": 20.323742,
+        "volatility": 1.0,
+        "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 367.25,
+        "confidence": 70,
+        "action": "ACCUMULATE_SLOWLY",
+        "weekly_trend": "UP",
+        "monthly_trend": "UP",
+        "dividend_yield": 3.17,
+        "pe": 20.323742,
+        "volatility": 1.0,
+        "sector": "GENERAL"
+    },
+    {
+        "date": "2026-02-04",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-04",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-04",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-04",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-04",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-04",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-05",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-05",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-05",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-05",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-05",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-05",
+        "confidence": 70
+    },
+    {
+        "date": "2026-02-05",
+        "confidence": 70
     }
 ]

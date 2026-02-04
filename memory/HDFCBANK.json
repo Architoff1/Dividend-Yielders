@@ -106,5 +106,45 @@
         "pe": 21.284056,
         "volatility": 1.0,
         "sector": "PSU"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 953.0999755859375,
+        "confidence": 15,
+        "action": "AVOID",
+        "weekly_trend": "DOWN",
+        "monthly_trend": "DOWN",
+        "dividend_yield": 1.16,
+        "pe": 21.284056,
+        "volatility": 1.0,
+        "sector": "PSU"
+    },
+    {
+        "date": "2026-02-04",
+        "price": 953.0999755859375,
+        "confidence": 15,
+        "action": "AVOID",
+        "weekly_trend": "DOWN",
+        "monthly_trend": "DOWN",
+        "dividend_yield": 1.16,
+        "pe": 21.284056,
+        "volatility": 1.0,
+        "sector": "PSU"
+    },
+    {
+        "date": "2026-02-04",
+        "confidence": 15
+    },
+    {
+        "date": "2026-02-04",
+        "confidence": 15
+    },
+    {
+        "date": "2026-02-05",
+        "confidence": 15
+    },
+    {
+        "date": "2026-02-05",
+        "confidence": 15
     }
 ]
